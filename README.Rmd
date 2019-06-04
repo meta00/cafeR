@@ -12,44 +12,18 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
-# cafeR
+# Introduction
 
-<!-- badges: start -->
-[![Travis build status](https://travis-ci.org/meta00/cafeR.svg?branch=master)](https://travis-ci.org/meta00/cafeR)
-[![Codecov test coverage](https://codecov.io/gh/meta00/cafeR/branch/master/graph/badge.svg)](https://codecov.io/gh/meta00/cafeR?branch=master)
-<!-- badges: end -->
+CafeR is organized as sort of casual gatherings for R users in Oucru HN to discuss and share good practices in using the language. 
 
-The goal of cafeR is to ...
+Level is from basic to intermediate. 
 
-## Installation
+Topics are chosen based on participants' needs and speakers' availability.
 
-You can install the released version of cafeR from [CRAN](https://CRAN.R-project.org) with:
+To propose topics, ideas to make the meetings better, or questions about R problem, please go to in the CafeR slack. 
 
-``` r
-install.packages("cafeR")
-```
+# Schedule
 
-## Example
+Twice a month on Wednesday before the unit's academic meeting. Extra meetings might be planned too.
 
-This is a basic example which shows you how to solve a common problem:
 
-```{r example}
-library(cafeR)
-## basic example code
-```
-
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub!

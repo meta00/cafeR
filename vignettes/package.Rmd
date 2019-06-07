@@ -1,0 +1,142 @@
+---
+title: "Package"
+author: "Lucie Contamin"
+date: "6/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Objective
+Introduction to developing R package and R project:
+
+* To be organized
+* Reusable
+
+Two different ways of organising codes: project (less constraints) package. 
+
+* Project is a specific folder, the work is saved, maintained the status of work (linking codes to data), always return to previous.
+
+* Package: with architecture (with rules), allow to publish to public repo. Can be code and/or data.
+Repo: cran, github, bioconductor etc.
+
+## Demo
+
+
+```{r, eval=T}
+# Make an example data frame
+lab_res <- data.frame("test1" = c(1, 3),
+           "test2" = c(3, 4),
+           "ID" = c("a", "b"))
+print(lab_res)
+
+# write the data frame in a file in the working directory
+write.csv(lab_res, file = paste0(getwd(),"/lab_res.csv"))
+
+# come back and read
+lab <- read.csv("lab_res.csv")
+
+# to print a variable you can do
+lab
+# or
+print(lab)
+
+# or print along with assignment
+(lab <- read.csv("lab_res.csv"))
+
+# let assume we need to make a function
+
+mean_col <- function(x){
+    tot <- sum(x)/length(x)
+    return(tot)
+}
+
+(m_test1 <- mean_col(lab$test1))
+
+```
+
+Let say we are happy with out script, we leave and come back 3 years laters. We don't know what was going on. Without documentation, we forget what the scripts are meant to. So, we organise in project.
+Use the menu of RStudio. What happened was:
+
+* A project file is created: .Rproj, create a folder R for scripts, data for data. 
+Another way of making project is to use usethis::create_project (with R folder created automatically to store scripts)
+
+```{r, eval=FALSE}
+usethis::create_project("/Users/haihb/Desktop/cafer")
+```
+Easy to share. But then we'll need to add documentation to our script to reuse/share: Add comments with # (like above).
+
+Now you want to make a package:
+* From interface
+* using usethis
+```{r, eval=F}
+usethis::create_package("/Users/haihb/Desktop/cafer1")
+```
+
+Pay attention to the architecture created. You can put your code in R. For now, let's play with hello.R
+
+Start describing your package with DESCRIPTION. 
+
+Make data folder with usethis
+
+```{r, eval=F}
+# This function create data-raw folder and an empty dataset
+usethis::use_data_raw()
+usethis::use_data("DATASET")
+# put in the data-raww the script to create data, in DATASET.R
+
+lab_res <- data.frame("test1" = c(1, 3),
+                      "test2" = c(3, 4),
+                      "ID" = c("a", "b"))
+
+usethis::use_data(lab_res)
+
+```
+
+To document the data objects. Create in R, the file data.R. You need to document the data, if not warnings while compile. (Roxygen, language for documentation).
+
+Use `devtools::document()` to create the help files in the man folder.
+
+Now we go back to document the functions in scripts (functions). Create a script file for funtion add
+
+```{r}
+add <- function(x, y = 1){
+    if(is.character(x)){
+        stop("x should be a number")
+    }
+    x <- x + y
+    return(x)
+}
+```
+
+Then save it with the same name of your function: add.R in R folder. 
+
+To document a function, it requires:
+
+* @params to describe the parameters. Compulsory.
+* @export if the function is loaded in the env to share. We don't need to export all functions but the shared ones needed to be exported.
+
+```{r, eval=F}
+
+#' Addition
+#' 
+#' Calculate the sum
+#' @param x a numeric value
+#' @export
+#' @examples
+#' x <- 1
+#' add(x)
+#'
+
+add <- function(x, y = 1){
+    if(is.character(x)){
+        stop("x should be a number")
+    }
+    x <- x + y
+    return(x)
+}
+
+```
+

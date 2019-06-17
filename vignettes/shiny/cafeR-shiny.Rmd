@@ -1,0 +1,231 @@
+---
+title: "CafeR - Shiny Application"
+author: "Tung Trinh"
+date: "6/12/2019"
+output: 
+  html_document:
+    css: style.css
+    toc: yes
+    toc_float: 
+      collapsed: no
+      smooth_scroll: yes
+---
+
+#**1.Introduction**
+**Shiny** is a **R package** that help **useR** can build **an interactive web application**. The product then can be deployed to a host server for further uses.
+
+#**2.Basic components of Shiny**
+Shiny has three must have components:
+
+  - **UI** (USER INTERFACE)
+  - **Server** 
+  - **ShinyApp** function to call the Application *(there is other alternative way)* 
+  
+There are two styles of writing a Shiny App:
+
+  - **Seperate files for IU and Server** 
+  - **One for All**
+
+And there are also two ways of writing a Shiny App:
+
+  - Use basic R file
+  - Use Rmarkdown file
+
+#**3.From BASIC To ADVANCE**
+
+##**3.1 BASIC**
+First, we will build basic Shiny application from the famous dataset **mtcars**. You need to create a new R script for this and do the following codes.
+
+```{r, echo = T, message = F, warning = F, eval = F}
+#First we load the required packages Shiny
+library(shiny)
+```
+
+Next one, we write the UI and Server on the R script that you just have created.
+
+UI object
+```{r, echo = T, message = F, warning  = F, eval = F}
+# create the IU object 
+ui <-  fluidPage({
+  # Your app title
+  titlePanel("Your title here")
+  # A sidebar layout 
+  sidebarLayout(
+    # define the layout of sidebar 
+    sidebarPanel(
+      # Create a slider to select the range of of disp
+      sliderInput(
+        # create an id for the input to be used in the server (compulsory)
+        inputId = "disp",
+        # create a label for the input (not compulsory)
+        label = "Your label",
+        # define the range of slider input
+        # min
+        min = 50,
+        # max
+        max = 500,
+        # this is the start value 
+        value = 200
+      )
+    ),
+    # create main panel to display the output plot
+    mainPanel(
+      # output is a histoplot that we will create in the server object and its ID have to be "plotdisp"
+      plotOutput(outputId = "plotdisp")
+    )  
+  )
+})
+```
+
+Next, we have to create a server function which contains the functions that built your app.
+```{r, echo = T, message = F, warning = F, eval = F}
+# create server function
+# the server takes the input and process then turn into the output 
+server <- function(input, output){
+  # define the output, the output id must be the same with the ID in the UI object.
+  # because the output change as the input change - it's dynamic so we need a special function renderPlot() to make 
+  # the output plot react with our choice
+  output$plotdisp <- renderPlot({
+    # filter the data by the input and save into new object
+    # the input id must be the same as in the UI object
+    new_data <- mtcars[mtcars$disp <= input$disp,]
+    # plot the histogram
+    hist(new_data$disp, col = "gray70", border = "white", xlab = "Disp", main = "Histogram of dispension")
+  })
+}
+
+```
+
+Finallly, we run the app with `shinyApp()` function.
+```{r echo = T, message = F, warning = F, eval = F}
+shinyApp(ui = ui, server = server)
+```
+
+**WANT MORE SOME BASIC TUTORIAL?**
+Check this [link](https://shiny.rstudio.com/tutorial/)
+
+##**3.2 INTERMEDIATE**
+Above we just use **basic functions** to built a shiny app. This tutorial is designed to combine more **complex functions**, **other packages** and your **built-in functions** to develop a shiny app. 
+You should create another Rscript for this excercise. 
+```{r, echo = T, message = F, warning = F, eval = F}
+# At first let's clean up the R enviroment
+rm(list = ls())
+```
+
+This tutorial uses `dplyr`, `plotly` packages. Please install these package beforehand.
+
+```{r echo = T, message = F, warning = F, eval = F}
+# install required packages if you haven't intalled them
+install.packages("dplyr")
+install.packages("plotly")
+# Load the required packages
+# If you haven't load the shiny package or start a new session, let's load it again.
+library(shiny)
+library(dplyr)
+library(plotly)
+```
+
+Again, we use the dataset **mtcar** to plot the correlation plot of two different variables. Same as the previous exercise, we have to create the UI object and server function.
+
+UI
+```{r echo = T, message = F, warning = F, eval = F}
+ui <- pageWithSidebar(
+  # Your Application title
+  headerPanel("Your title"),
+  # A sidebar layout
+  sidebarPanel(
+    # Input for the X axis, the "x" is the id we set for the first input, names(mtcars) is the vector contains 
+    # the names of mtcars's variables
+    selectInput("x","X variable", names(mtcars)),
+    # Input for the Y axis, we do the same as the X axis
+    selectInput("y","Y variable", names(mtcars), selected = names(mtcars)[[2]])
+  ),
+  # define the main panel
+  mainPanel(
+    # This time, our output is a plotly product so we have to use plotlyOutput() function to present the plot on shiny
+    plotlyOutput("scatterplot")
+    )
+)
+```
+
+Server
+```{r echo = T, message = F, warning = F, eval = F}
+server <- function(input, output){
+  # first we have to select the data from the input 
+  # please note that the input is dynamic, that why in order to update the output everytime we select a new variable,
+  #  we have to use the reactive() function from shiny packages to indicate/ help the shiny app know/update the value
+  dt <- reactive({
+    # select two target variables
+    dat <- mtcars %>% select(ends_with(input$x), ends_with(input$y))
+  })
+  # plot the scatter plot and destinate it in the output
+  # again, you have to make sure the output id is the same as the id in UI
+  output$scatterplot <- renderPlotly({
+    # first we set the data from the reactive funtion create above
+    dt <- dt()
+    # calculate the correration value
+    corresult <- cor(dt[,1],dt[,2], use = "complete.obs")
+    # plotly function
+    plot_ly(data = dt, x=~dt[,1], y=~dt[,2], name = "scaterplot") %>%
+      # add the layout with the title is the correlation
+      layout(
+        xaxis= list(title = input$x),
+        yaxis= list(title = input$y),
+        title = paste("r = ",corresult, sep = ""))
+  })
+}
+```
+
+Then we can run the the shiny App 
+```{r echo = T, eval = F, warning = F, message = F}
+shinyApp(ui,server)
+```
+
+**READY for more advance stuffs ??**
+
+##**3.3 ADVANCE**
+
+You may note that the interface of the normal shiny application is so *normal*, *non-professional*, and you also want to write some description beside? You want to find a solution for that. Luckily, if you make it to this part of tutorial, you have enough skill to create a shiny application for publication.
+
+This time, we will use additional packages called `rmarkdown`, `flexdashboard` and `leaflet`. `flexdashboard` helps you to build a professional interface and `leaflet` helps you build an interactive map. 
+
+**WANT TO SEE AN EXAMPLE OF THIS TO SEE WETHER IT'S GOOD ENOUGH TO HAVE A TRY??**
+
+For this excercise, we write the shiny app on a *Rmarkdown* file instead of normal *R script*. Please create a new *Rmarkdown* file. If you don't know what rmarkdown is, follow this [link](https://rmarkdown.rstudio.com/) first. We should know the structure of a rmarkdown file before doing this tutorial.
+
+The first part of Rmarkdownfile must indicate the output format.
+```{r echo  =T, eval = F, message = F, warning = F}
+---
+title: "Your title"
+runtime: shiny #indicating this file for shiny application
+output: 
+  # define the structure of flex_dashboard
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    social: menu
+    theme: simplex
+---    
+```
+
+Difference to the normal shiny, we don't need to create *UI* object and *server* function in rmarkdown file. The *UI* and *server* are written in different chunks of codes and to run it, you simply knit the rmarkdown file. Otherwise, you can also have some codes to load the data from the local to the R enviroment as well as write your own function before interpet/ configure the *UI* and *server*.
+
+**3.3.1 Sidebar** 
+
+To create a sidebar for the Input, before you write the code chunk, simply put this code before.
+```{r echo = T, eval = F, message = F, warning = F}
+Sidebar {.sidebar}
+======================================================================
+```
+
+Then we have the place for input parameters.
+
+**3.3.2 User Interface**
+
+
+**3.3.3 Server (Output)**
+
+#**TAKE HOME MESSAGE**
+Thank you for your patience and effort to make it here. Fortunately, there no take-home message. If you have any querry, please email [me](mailto:tungts@oucru.org).
+
+![](running_logo.jpg)
